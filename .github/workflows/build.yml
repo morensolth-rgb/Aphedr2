@@ -32,38 +32,72 @@ jobs:
 
       - name: Download frida-server (arm64)
         run: |
+          mkdir -p android/app/src/main/assets
           FRIDA_VERSION="16.3.3"
+
           wget -q "https://github.com/frida/frida/releases/download/${FRIDA_VERSION}/frida-server-${FRIDA_VERSION}-android-arm64.xz" -O frida-server.xz
+
           xz -d frida-server.xz
-          mv frida-server-* android/app/src/main/assets/frida-server-arm64
+
+          echo "=== FILES AFTER EXTRACT ==="
+          ls -la
+
+          SERVER_FILE=$(find . -maxdepth 1 -type f \
+            ! -name "*.json" \
+            ! -name "*.js" \
+            ! -name "*.tsx" \
+            ! -name "*.ts" \
+            ! -name "*.md" \
+            ! -name "*.yml" \
+            ! -name "*.yaml" \
+            | head -n 1)
+
+          echo "Detected file: $SERVER_FILE"
+
+          cp "$SERVER_FILE" android/app/src/main/assets/frida-server-arm64
+
           chmod +x android/app/src/main/assets/frida-server-arm64
+
           echo "frida-server size: $(wc -c < android/app/src/main/assets/frida-server-arm64) bytes"
 
       - name: Download frida-gadget (arm64)
         run: |
+          mkdir -p android/app/src/main/assets
           FRIDA_VERSION="16.3.3"
+
           wget -q "https://github.com/frida/frida/releases/download/${FRIDA_VERSION}/frida-gadget-${FRIDA_VERSION}-android-arm64.so.xz" -O frida-gadget.xz
+
           xz -d frida-gadget.xz
-          mv *.so android/app/src/main/assets/frida-gadget-arm64.so
+
+          GADGET_FILE=$(find . -maxdepth 1 -name "*.so" | head -n 1)
+
+          echo "Detected gadget: $GADGET_FILE"
+
+          cp "$GADGET_FILE" android/app/src/main/assets/frida-gadget-arm64.so
+
           echo "frida-gadget size: $(wc -c < android/app/src/main/assets/frida-gadget-arm64.so) bytes"
 
       - name: Download apktool
         run: |
-          wget -q "https://github.com/iBotPeaches/Apktool/releases/download/v2.9.3/apktool_2.9.3.jar" -O android/app/src/main/assets/apktool.jar
-          echo "apktool size: $(wc -c < android/app/src/main/assets/apktool.jar) bytes"
+          wget -q "https://github.com/iBotPeaches/Apktool/releases/download/v2.9.3/apktool_2.9.3.jar" \
+            -O android/app/src/main/assets/apktool.jar
 
       - name: Generate debug keystore
         run: |
           keytool -genkey -v \
             -keystore android/app/debug.keystore \
             -alias androiddebugkey \
-            -keyalg RSA -keysize 2048 -validity 10000 \
-            -storepass android -keypass android \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -storepass android \
+            -keypass android \
             -dname "CN=Android Debug,O=Android,C=US" 2>/dev/null || true
 
       - name: Bundle JS
         run: |
           mkdir -p android/app/src/main/assets
+
           npx react-native bundle \
             --platform android \
             --dev false \
@@ -79,8 +113,6 @@ jobs:
           cd android
           chmod +x gradlew
           ./gradlew assembleRelease --no-daemon --stacktrace
-        env:
-          GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -92,4 +124,6 @@ jobs:
       - name: Show APK info
         run: |
           APK="android/app/build/outputs/apk/release/app-release.apk"
-          echo "APK size: $(du -sh $APK | cut -f1)"
+          if [ -f "$APK" ]; then
+            echo "APK size: $(du -sh $APK | cut -f1)"
+          fi
