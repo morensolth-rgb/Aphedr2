@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,17 +23,20 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
 
       - name: Install JS dependencies
         run: npm install
+
+      - name: Create assets directory
+        run: mkdir -p android/app/src/main/assets
 
       - name: Download frida-server (arm64)
         run: |
           FRIDA_VERSION="16.3.3"
           wget -q "https://github.com/frida/frida/releases/download/${FRIDA_VERSION}/frida-server-${FRIDA_VERSION}-android-arm64.xz" -O frida-server.xz
           xz -d frida-server.xz
-          mv frida-server android/app/src/main/assets/frida-server-arm64
+          mv frida-server-* android/app/src/main/assets/frida-server-arm64
+          chmod +x android/app/src/main/assets/frida-server-arm64
           echo "frida-server size: $(wc -c < android/app/src/main/assets/frida-server-arm64) bytes"
 
       - name: Download frida-gadget (arm64)
@@ -40,7 +44,7 @@ jobs:
           FRIDA_VERSION="16.3.3"
           wget -q "https://github.com/frida/frida/releases/download/${FRIDA_VERSION}/frida-gadget-${FRIDA_VERSION}-android-arm64.so.xz" -O frida-gadget.xz
           xz -d frida-gadget.xz
-          mv frida-gadget.so android/app/src/main/assets/frida-gadget-arm64.so
+          mv *.so android/app/src/main/assets/frida-gadget-arm64.so
           echo "frida-gadget size: $(wc -c < android/app/src/main/assets/frida-gadget-arm64.so) bytes"
 
       - name: Download apktool
