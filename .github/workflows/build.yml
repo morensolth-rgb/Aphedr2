@@ -13,7 +13,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 🔥 مهم: يثبت node_modules بشكل صحيح
+      # 🔥 Node أولاً
       - name: Setup Node 18
         uses: actions/setup-node@v4
         with:
@@ -23,7 +23,7 @@ jobs:
       - name: Install JS dependencies
         run: npm install
 
-      # 🔥 مهم جدًا: يمنع مشاكل Gradle/Kotlin
+      # 🔥 Java بعد Node
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
@@ -90,9 +90,12 @@ jobs:
             --bundle-output android/app/src/main/assets/index.android.bundle \
             --assets-dest android/app/src/main/res
 
-      # 🔥 إصلاح مهم: يمنع Kotlin Isolation errors
-      - name: Clean Gradle
-        run: cd android && ./gradlew clean
+      # 🔥 FIX مهم: صلاحيات gradlew
+      - name: Fix Gradlew permissions + Clean
+        run: |
+          chmod +x android/gradlew
+          cd android
+          ./gradlew clean
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
@@ -100,7 +103,6 @@ jobs:
       - name: Build Release APK
         run: |
           cd android
-          chmod +x gradlew
           ./gradlew assembleRelease --no-daemon --stacktrace
 
       - name: Upload APK
