@@ -11,16 +11,17 @@ class MainApplication : Application(), ReactApplication {
 
     private val mReactNativeHost = object : ReactNativeHost(this) {
 
-        override fun getUseDeveloperSupport() = false
-
-        override fun getPackages(): List<ReactPackage> {
-            val packages = PackageList(this).packages.toMutableList()
-            return packages
+        override fun getUseDeveloperSupport(): Boolean {
+            return false
         }
 
-        override fun getJSMainModuleName() = "index"
+        override fun getPackages(): List<ReactPackage> {
+            return PackageList(this).packages
+        }
 
-        override fun getBundleAssetName() = "index.android.bundle"
+        override fun getJSMainModuleName(): String {
+            return "index"
+        }
     }
 
     override fun getReactNativeHost(): ReactNativeHost {
