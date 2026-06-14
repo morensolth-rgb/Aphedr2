@@ -1,11 +1,5 @@
-pluginManagement {
-    includeBuild("../node_modules/@react-native/gradle-plugin")
-    repositories {
-        gradlePluginPortal()
-        google()
-        mavenCentral()
-    }
-}
-
 rootProject.name = "FridaCtl"
+
 include(":app")
+
+includeBuild("../node_modules/@react-native/gradle-plugin")
