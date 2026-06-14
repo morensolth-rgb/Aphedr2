@@ -13,17 +13,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 🔥 Node أولاً
       - name: Setup Node 18
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
 
-      - name: Install JS dependencies
-        run: npm install
+      # 🔥 تثبيت dependencies + التأكد من وجود React Native Gradle plugin
+      - name: Install dependencies (clean)
+        run: |
+          npm install
+          ls node_modules/@react-native/gradle-plugin
 
-      # 🔥 Java بعد Node
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
@@ -90,8 +91,8 @@ jobs:
             --bundle-output android/app/src/main/assets/index.android.bundle \
             --assets-dest android/app/src/main/res
 
-      # 🔥 FIX مهم: صلاحيات gradlew
-      - name: Fix Gradlew permissions + Clean
+      # 🔥 Clean + build (FIX النهائي)
+      - name: Prepare Gradle
         run: |
           chmod +x android/gradlew
           cd android
@@ -103,6 +104,7 @@ jobs:
       - name: Build Release APK
         run: |
           cd android
+          chmod +x gradlew
           ./gradlew assembleRelease --no-daemon --stacktrace
 
       - name: Upload APK
