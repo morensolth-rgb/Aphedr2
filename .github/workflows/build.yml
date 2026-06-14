@@ -32,55 +32,50 @@ jobs:
 
       - name: Download frida-server (arm64)
         run: |
+          set -e
           mkdir -p android/app/src/main/assets
           FRIDA_VERSION="16.3.3"
 
-          wget -q "https://github.com/frida/frida/releases/download/${FRIDA_VERSION}/frida-server-${FRIDA_VERSION}-android-arm64.xz" -O frida-server.xz
+          curl -L -o frida-server.xz \
+            "https://github.com/frida/frida/releases/download/${FRIDA_VERSION}/frida-server-${FRIDA_VERSION}-android-arm64.xz"
 
           xz -d frida-server.xz
 
-          echo "=== FILES AFTER EXTRACT ==="
+          echo "=== FILES AFTER SERVER EXTRACT ==="
           ls -la
 
-          SERVER_FILE=$(find . -maxdepth 1 -type f \
-            ! -name "*.json" \
-            ! -name "*.js" \
-            ! -name "*.tsx" \
-            ! -name "*.ts" \
-            ! -name "*.md" \
-            ! -name "*.yml" \
-            ! -name "*.yaml" \
-            | head -n 1)
+          SERVER_FILE=$(find . -maxdepth 1 -type f | grep frida-server | head -n 1)
 
-          echo "Detected file: $SERVER_FILE"
+          echo "Detected server: $SERVER_FILE"
 
           cp "$SERVER_FILE" android/app/src/main/assets/frida-server-arm64
-
           chmod +x android/app/src/main/assets/frida-server-arm64
-
-          echo "frida-server size: $(wc -c < android/app/src/main/assets/frida-server-arm64) bytes"
 
       - name: Download frida-gadget (arm64)
         run: |
+          set -e
           mkdir -p android/app/src/main/assets
           FRIDA_VERSION="16.3.3"
 
-          wget -q "https://github.com/frida/frida/releases/download/${FRIDA_VERSION}/frida-gadget-${FRIDA_VERSION}-android-arm64.so.xz" -O frida-gadget.xz
+          curl -L -o frida-gadget.so.xz \
+            "https://github.com/frida/frida/releases/download/${FRIDA_VERSION}/frida-gadget-${FRIDA_VERSION}-android-arm64.so.xz"
 
-          xz -d frida-gadget.xz
+          xz -d frida-gadget.so.xz || true
 
-          GADGET_FILE=$(find . -maxdepth 1 -name "*.so" | head -n 1)
+          echo "=== FILES AFTER GADGET EXTRACT ==="
+          ls -la
+
+          GADGET_FILE=$(find . -maxdepth 1 -type f | grep -E 'gadget|\.so$' | head -n 1)
 
           echo "Detected gadget: $GADGET_FILE"
 
           cp "$GADGET_FILE" android/app/src/main/assets/frida-gadget-arm64.so
 
-          echo "frida-gadget size: $(wc -c < android/app/src/main/assets/frida-gadget-arm64.so) bytes"
-
       - name: Download apktool
         run: |
-          wget -q "https://github.com/iBotPeaches/Apktool/releases/download/v2.9.3/apktool_2.9.3.jar" \
-            -O android/app/src/main/assets/apktool.jar
+          curl -L \
+            "https://github.com/iBotPeaches/Apktool/releases/download/v2.9.3/apktool_2.9.3.jar" \
+            -o android/app/src/main/assets/apktool.jar
 
       - name: Generate debug keystore
         run: |
