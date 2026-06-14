@@ -1,5 +1,6 @@
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
+apply plugin: "com.facebook.react"
 
 android {
     namespace "com.fridactl"
@@ -12,6 +13,16 @@ android {
         targetSdk 34
         versionCode 1
         versionName "1.0"
+    }
+
+    // 🔥 الحل الأساسي للمشكلة
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
     }
 
     buildTypes {
