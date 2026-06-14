@@ -4,9 +4,16 @@ pluginManagement {
         google()
         mavenCentral()
     }
+}
 
-    includeBuild("../node_modules/@react-native/gradle-plugin")
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+    }
 }
 
 rootProject.name = "FridaCtl"
 include(":app")
+
+includeBuild("../node_modules/@react-native/gradle-plugin")
