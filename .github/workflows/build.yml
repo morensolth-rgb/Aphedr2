@@ -13,19 +13,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # 🔥 مهم: يثبت node_modules بشكل صحيح
+      - name: Setup Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install JS dependencies
+        run: npm install
+
+      # 🔥 مهم جدًا: يمنع مشاكل Gradle/Kotlin
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-
-      - name: Setup Node 18
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
-      - name: Install JS dependencies
-        run: npm install
+          cache: 'gradle'
 
       - name: Create assets directory
         run: mkdir -p android/app/src/main/assets
@@ -33,7 +37,6 @@ jobs:
       - name: Download frida-server (arm64)
         run: |
           set -e
-          mkdir -p android/app/src/main/assets
           FRIDA_VERSION="16.3.3"
 
           curl -L -o frida-server.xz \
@@ -41,12 +44,7 @@ jobs:
 
           xz -d frida-server.xz
 
-          echo "=== FILES AFTER SERVER EXTRACT ==="
-          ls -la
-
           SERVER_FILE=$(find . -maxdepth 1 -type f | grep frida-server | head -n 1)
-
-          echo "Detected server: $SERVER_FILE"
 
           cp "$SERVER_FILE" android/app/src/main/assets/frida-server-arm64
           chmod +x android/app/src/main/assets/frida-server-arm64
@@ -54,20 +52,14 @@ jobs:
       - name: Download frida-gadget (arm64)
         run: |
           set -e
-          mkdir -p android/app/src/main/assets
           FRIDA_VERSION="16.3.3"
 
-          curl -L -o frida-gadget.so.xz \
+          curl -L -o frida-gadget.xz \
             "https://github.com/frida/frida/releases/download/${FRIDA_VERSION}/frida-gadget-${FRIDA_VERSION}-android-arm64.so.xz"
 
-          xz -d frida-gadget.so.xz || true
-
-          echo "=== FILES AFTER GADGET EXTRACT ==="
-          ls -la
+          xz -d frida-gadget.xz || true
 
           GADGET_FILE=$(find . -maxdepth 1 -type f | grep -E 'gadget|\.so$' | head -n 1)
-
-          echo "Detected gadget: $GADGET_FILE"
 
           cp "$GADGET_FILE" android/app/src/main/assets/frida-gadget-arm64.so
 
@@ -91,14 +83,16 @@ jobs:
 
       - name: Bundle JS
         run: |
-          mkdir -p android/app/src/main/assets
-
           npx react-native bundle \
             --platform android \
             --dev false \
             --entry-file index.js \
             --bundle-output android/app/src/main/assets/index.android.bundle \
             --assets-dest android/app/src/main/res
+
+      # 🔥 إصلاح مهم: يمنع Kotlin Isolation errors
+      - name: Clean Gradle
+        run: cd android && ./gradlew clean
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
