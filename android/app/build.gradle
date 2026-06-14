@@ -1,10 +1,11 @@
-apply plugin: "com.android.application"
-apply plugin: "org.jetbrains.kotlin.android"
-apply plugin: "com.facebook.react"
+plugins {
+    id "com.android.application"
+    id "org.jetbrains.kotlin.android"
+    id "com.facebook.react"
+}
 
 android {
     namespace "com.fridactl"
-
     compileSdk 34
 
     defaultConfig {
@@ -13,10 +14,6 @@ android {
         targetSdk 34
         versionCode 1
         versionName "1.0"
-    }
-
-    buildFeatures {
-        buildConfig true
     }
 
     compileOptions {
@@ -37,14 +34,8 @@ android {
 }
 
 dependencies {
-    // React Native (مهم جدًا يكون version واضح)
-    implementation("com.facebook.react:react-android:0.73.6")
-    implementation("com.facebook.react:hermes-android:0.73.6")
+    implementation("com.facebook.react:react-android")
+    implementation("com.facebook.react:hermes-android")
 
-    // Android
-    implementation("androidx.appcompat:appcompat:1.6.1")
-
-    // Root shell (libsu)
     implementation("com.github.topjohnwu.libsu:core:5.2.2")
-    implementation("com.github.topjohnwu.libsu:service:5.2.2")
 }
