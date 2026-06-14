@@ -13,75 +13,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node 18
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '18'
 
-      # 🔥 IMPORTANT: تثبيت dependencies + التحقق من React Native plugin
-      - name: Install JS dependencies (CRITICAL)
+      - name: Install dependencies
         run: |
           npm install
-          ls -la node_modules/@react-native/gradle-plugin
+          ls node_modules/@react-native/gradle-plugin
 
-      - name: Verify React Native Gradle Plugin
-        run: |
-          test -d node_modules/@react-native/gradle-plugin || (echo "Missing RN gradle plugin" && exit 1)
-
-      - name: Setup Java 17
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
           cache: gradle
 
-      - name: Create assets directory
+      - name: Verify RN plugin
+        run: test -d node_modules/@react-native/gradle-plugin
+
+      - name: Create assets
         run: mkdir -p android/app/src/main/assets
-
-      - name: Download frida-server (arm64)
-        run: |
-          set -e
-          FRIDA_VERSION="16.3.3"
-
-          curl -L -o frida-server.xz \
-            "https://github.com/frida/frida/releases/download/${FRIDA_VERSION}/frida-server-${FRIDA_VERSION}-android-arm64.xz"
-
-          xz -d frida-server.xz
-
-          SERVER_FILE=$(find . -maxdepth 1 -type f | grep frida-server | head -n 1)
-          cp "$SERVER_FILE" android/app/src/main/assets/frida-server-arm64
-          chmod +x android/app/src/main/assets/frida-server-arm64
-
-      - name: Download frida-gadget (arm64)
-        run: |
-          set -e
-          FRIDA_VERSION="16.3.3"
-
-          curl -L -o frida-gadget.xz \
-            "https://github.com/frida/frida/releases/download/${FRIDA_VERSION}/frida-gadget-${FRIDA_VERSION}-android-arm64.so.xz"
-
-          xz -d frida-gadget.xz || true
-
-          GADGET_FILE=$(find . -maxdepth 1 -type f | grep -E 'gadget|\.so$' | head -n 1)
-          cp "$GADGET_FILE" android/app/src/main/assets/frida-gadget-arm64.so
-
-      - name: Download apktool
-        run: |
-          curl -L \
-            "https://github.com/iBotPeaches/Apktool/releases/download/v2.9.3/apktool_2.9.3.jar" \
-            -o android/app/src/main/assets/apktool.jar
-
-      - name: Generate debug keystore
-        run: |
-          keytool -genkey -v \
-            -keystore android/app/debug.keystore \
-            -alias androiddebugkey \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000 \
-            -storepass android \
-            -keypass android \
-            -dname "CN=Android Debug,O=Android,C=US" 2>/dev/null || true
 
       - name: Bundle JS
         run: |
@@ -92,24 +45,17 @@ jobs:
             --bundle-output android/app/src/main/assets/index.android.bundle \
             --assets-dest android/app/src/main/res
 
-      - name: Prepare Gradle
-        run: |
-          chmod +x android/gradlew
-          cd android
-          ./gradlew clean
+      - name: Make gradlew executable
+        run: chmod +x android/gradlew
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Clean
+        run: cd android && ./gradlew clean
 
-      - name: Build Release APK
-        run: |
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon --stacktrace
+      - name: Build APK
+        run: cd android && ./gradlew assembleRelease --no-daemon --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: FridaCtl-release
+          name: app-release
           path: android/app/build/outputs/apk/release/app-release.apk
-          retention-days: 30
