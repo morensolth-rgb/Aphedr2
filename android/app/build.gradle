@@ -15,30 +15,11 @@ android {
         versionName "1.0"
     }
 
-    signingConfigs {
-        debug {
-            storeFile file('debug.keystore')
-            storePassword 'android'
-            keyAlias 'androiddebugkey'
-            keyPassword 'android'
-        }
-        release {
-            storeFile file('debug.keystore')
-            storePassword 'android'
-            keyAlias 'androiddebugkey'
-            keyPassword 'android'
-        }
-    }
-
     buildTypes {
         release {
-            signingConfig signingConfigs.release
             minifyEnabled false
+            signingConfig signingConfigs.debug
         }
-    }
-
-    aaptOptions {
-        noCompress "frida-server-arm64", "frida-gadget-arm64.so", "apktool.jar"
     }
 }
 
