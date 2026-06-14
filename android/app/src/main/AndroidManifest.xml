@@ -11,8 +11,7 @@
     <application
         android:name=".MainApplication"
         android:label="FridaCtl"
-        android:icon="@mipmap/ic_launcher"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:icon="@android:drawable/sym_def_app_icon"
         android:allowBackup="false"
         android:theme="@style/AppTheme"
         android:requestLegacyExternalStorage="true">
