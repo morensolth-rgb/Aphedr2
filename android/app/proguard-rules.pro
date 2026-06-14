@@ -1,0 +1,2 @@
+-keep class com.fridactl.** { *; }
+-keep class com.topjohnwu.superuser.** { *; }
