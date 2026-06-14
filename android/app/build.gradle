@@ -34,7 +34,7 @@ android {
 }
 
 dependencies {
-    implementation("com.facebook.react:react-android")
+    implementation("com.facebook.react:react-android:0.73.6")
     implementation("com.facebook.react:hermes-android")
 
     implementation("com.github.topjohnwu.libsu:core:5.2.2")
