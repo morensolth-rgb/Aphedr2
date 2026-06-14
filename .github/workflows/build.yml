@@ -17,20 +17,23 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
 
-      # 🔥 تثبيت dependencies + التأكد من وجود React Native Gradle plugin
-      - name: Install dependencies (clean)
+      # 🔥 IMPORTANT: تثبيت dependencies + التحقق من React Native plugin
+      - name: Install JS dependencies (CRITICAL)
         run: |
           npm install
-          ls node_modules/@react-native/gradle-plugin
+          ls -la node_modules/@react-native/gradle-plugin
+
+      - name: Verify React Native Gradle Plugin
+        run: |
+          test -d node_modules/@react-native/gradle-plugin || (echo "Missing RN gradle plugin" && exit 1)
 
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: 'gradle'
+          cache: gradle
 
       - name: Create assets directory
         run: mkdir -p android/app/src/main/assets
@@ -46,7 +49,6 @@ jobs:
           xz -d frida-server.xz
 
           SERVER_FILE=$(find . -maxdepth 1 -type f | grep frida-server | head -n 1)
-
           cp "$SERVER_FILE" android/app/src/main/assets/frida-server-arm64
           chmod +x android/app/src/main/assets/frida-server-arm64
 
@@ -61,7 +63,6 @@ jobs:
           xz -d frida-gadget.xz || true
 
           GADGET_FILE=$(find . -maxdepth 1 -type f | grep -E 'gadget|\.so$' | head -n 1)
-
           cp "$GADGET_FILE" android/app/src/main/assets/frida-gadget-arm64.so
 
       - name: Download apktool
@@ -91,7 +92,6 @@ jobs:
             --bundle-output android/app/src/main/assets/index.android.bundle \
             --assets-dest android/app/src/main/res
 
-      # 🔥 Clean + build (FIX النهائي)
       - name: Prepare Gradle
         run: |
           chmod +x android/gradlew
@@ -113,10 +113,3 @@ jobs:
           name: FridaCtl-release
           path: android/app/build/outputs/apk/release/app-release.apk
           retention-days: 30
-
-      - name: Show APK info
-        run: |
-          APK="android/app/build/outputs/apk/release/app-release.apk"
-          if [ -f "$APK" ]; then
-            echo "APK size: $(du -sh $APK | cut -f1)"
-          fi
