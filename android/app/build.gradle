@@ -37,9 +37,14 @@ android {
 }
 
 dependencies {
+    // React Native (مهم جدًا يكون version واضح)
     implementation("com.facebook.react:react-android:0.73.6")
+    implementation("com.facebook.react:hermes-android:0.73.6")
 
-    // Root (libsu)
+    // Android
+    implementation("androidx.appcompat:appcompat:1.6.1")
+
+    // Root shell (libsu)
     implementation("com.github.topjohnwu.libsu:core:5.2.2")
     implementation("com.github.topjohnwu.libsu:service:5.2.2")
 }
